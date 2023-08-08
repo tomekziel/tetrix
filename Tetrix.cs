@@ -32,6 +32,33 @@ namespace Tetrix
             ,
             new int[,]
                 {
+                    {1,1},
+                    {1,1}
+                }
+            ,
+            new int[,]
+                {
+                    {0,1,1},
+                    {1,1,0},
+                    {0,0,0}
+                }
+            ,
+            new int[,]
+                {
+                    {0,1,0},
+                    {1,1,1},
+                    {0,0,0}
+                }
+            ,
+            new int[,]
+                {
+                    {1,1,0},
+                    {0,1,1},
+                    {0,0,0}
+                }
+            ,
+            new int[,]
+                {
                     {0,0,1},
                     {1,1,1},
                     {0,0,0}
@@ -55,14 +82,37 @@ namespace Tetrix
             while (true) { 
                 DrawScreen();
                 DrawPiece();
-                Console.ReadKey();
-                pieceNo++;
-                if (pieceNo == pieces.Count)
-                {
-                    pieceNo = 0;
-                }
+                var key = Console.ReadKey();
+                HandleKey(key);
+
             }
 
+        }
+
+        private void HandleKey(ConsoleKeyInfo key)
+        {
+            switch (key.Key) {
+                case ConsoleKey.LeftArrow:
+                    pieceX--;
+                    break;
+                case ConsoleKey.RightArrow: 
+                    pieceX++; 
+                    break;
+                case ConsoleKey.DownArrow:
+                    pieceY--;
+                    break;
+                case ConsoleKey.Spacebar:
+                    pieceNo++;
+                    if (pieceNo == pieces.Count)
+                    {
+                        pieceNo = 0;
+                    }
+                    break;
+                case ConsoleKey.Escape:
+                    Environment.Exit(0);
+                    break;
+
+            }
         }
 
         private void Init()
