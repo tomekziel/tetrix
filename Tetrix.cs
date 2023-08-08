@@ -14,59 +14,152 @@ namespace Tetrix
 
         int[,] well = new int[wellHeight, wellWidth];
 
-        readonly static List<int [,]> pieces = new List<int[,]> {
-            new int[,] 
+        readonly static List<int [,,]> pieces = new List<int[,,]> {
+            new int[,,] {
                 {
                     {0,0,0,0},
                     {1,1,1,1},
                     {0,0,0,0},
                     {0,0,0,0}
+                },{
+                    {0,0,1,0},
+                    {0,0,1,0},
+                    {0,0,1,0},
+                    {0,0,1,0}
+                },{
+                    {0,0,0,0},
+                    {0,0,0,0},
+                    {1,1,1,1},
+                    {0,0,0,0}
+                },{
+                    {0,1,0,0},
+                    {0,1,0,0},
+                    {0,1,0,0},
+                    {0,1,0,0}
                 }
+            }
             ,
-            new int[,]
+            new int[,,]{
                 {
                     {1,0,0},
                     {1,1,1},
                     {0,0,0}
-                }
-            ,
-            new int[,]
-                {
-                    {1,1},
-                    {1,1}
-                }
-            ,
-            new int[,]
-                {
+                },{
                     {0,1,1},
-                    {1,1,0},
-                    {0,0,0}
-                }
-            ,
-            new int[,]
-                {
                     {0,1,0},
+                    {0,1,0}
+                },{
+                    {0,0,0},
                     {1,1,1},
-                    {0,0,0}
-                }
+                    {0,0,1}
+                },{
+                    {0,1,0},
+                    {0,1,0},
+                    {1,1,0}
+                },
+            }
             ,
-            new int[,]
-                {
-                    {1,1,0},
-                    {0,1,1},
-                    {0,0,0}
-                }
-            ,
-            new int[,]
+            new int[,,]{
                 {
                     {0,0,1},
                     {1,1,1},
                     {0,0,0}
+                },
+                {
+                    {0,1,0},
+                    {0,1,0},
+                    {0,1,1}
+                },
+                {
+                    {0,0,0},
+                    {1,1,1},
+                    {1,0,0}
+                },
+                {
+                    {1,1,0},
+                    {0,1,0},
+                    {0,1,0}
                 }
+            }
+            ,
+            new int[,,]{
+                {
+                    {1,1},
+                    {1,1}
+                }
+            }
+            ,
+            new int[,,]{
+                {
+                    {0,1,1},
+                    {1,1,0},
+                    {0,0,0}
+                },{
+                    {0,1,0},
+                    {0,1,1},
+                    {0,0,1}
+                },{
+                    {0,0,0},
+                    {0,1,1},
+                    {1,1,0}
+                },{
+                    {1,0,0},
+                    {1,1,0},
+                    {0,1,0}
+                },
+            }
+            ,
+            new int[,,]{
+                {
+                    {0,1,0},
+                    {1,1,1},
+                    {0,0,0}
+                },
+                {
+                    {0,1,0},
+                    {0,1,1},
+                    {0,1,0}
+                },
+                {
+                    {0,0,0},
+                    {1,1,1},
+                    {0,1,0}
+                },
+                {
+                    {0,1,0},
+                    {1,1,0},
+                    {0,1,0}
+                },
+            }
+            ,
+            new int[,,]{
+                {
+                    {1,1,0},
+                    {0,1,1},
+                    {0,0,0}
+                },
+                {
+                    {0,1,0},
+                    {0,1,1},
+                    {0,0,1}
+                },
+                {
+                    {0,0,0},
+                    {1,1,0},
+                    {0,1,1}
+                },
+                {
+                    {1,0,0},
+                    {1,1,0},
+                    {0,1,0}
+                }
+            }
+            
 
         };
 
         int pieceNo = 2;
+        int pieceRotate = 0;
         int pieceX = 5;
         int pieceY = 15;
 
@@ -115,11 +208,12 @@ namespace Tetrix
                 case ConsoleKey.UpArrow:
                     if (false == CollisionDetected(pieceX, pieceY + 1))
                     {
-                        pieceY++;
+                        pieceRotate = (pieceRotate+1) % pieces[pieceNo].GetLength(0);
                     }
                     
                     break;
                 case ConsoleKey.Spacebar:
+                    pieceRotate = 0;
                     pieceNo++;
                     if (pieceNo == pieces.Count)
                     {
@@ -136,13 +230,13 @@ namespace Tetrix
         private void FreezePiece()
         {
             var currentPiece = pieces[pieceNo];
-            var dim = currentPiece.GetLength(0); // always square
+            var dim = currentPiece.GetLength(1); // always square
 
             for (var y = dim - 1; y >= 0; y--)
             {
                 for (var x = 0; x < dim; x++)
                 {
-                    if (currentPiece[y, x] == 1 )
+                    if (currentPiece[pieceRotate, y, x] == 1 )
                     {
                         well[pieceY - y, pieceX + x] = 1;
                     }
@@ -156,20 +250,31 @@ namespace Tetrix
         bool CollisionDetected(int pieceNewX, int pieceNewY)
         {
             var currentPiece = pieces[pieceNo];
-            var dim = currentPiece.GetLength(0); // always square
+            var dim = currentPiece.GetLength(1); // always square
 
             Console.SetCursorPosition(60, 12);
 
-            // left and right
+            // left 
             for (var y = dim - 1; y >= 0; y--)
             {
                 for (var x = 0; x < dim - 1; x++)
                 {
-                    if (
-                        (currentPiece[y, x] == 1 && pieceNewX + x < 0)||
-                        (currentPiece[y, x] == 1 && pieceNewX + x >= wellWidth-1))
+                    if (currentPiece[pieceRotate, y, x] == 1 && pieceNewX + x < 0) 
                     {
-                        Console.Write($"collision newX={pieceNewX} x={y}");
+                        Console.Write($"collision left newX={pieceNewX} x={x}");
+                        return true;
+                    }
+                }
+            }
+
+            // right
+            for (var y = dim - 1; y >= 0; y--)
+            {
+                for (var x = dim - 1; x >= 0; x--)
+                {
+                    if (currentPiece[pieceRotate, y, x] == 1 && pieceNewX + x >= wellWidth)
+                    {
+                        Console.Write($"collision right newX={pieceNewX} x={x}");
                         return true;
                     }
                 }
@@ -180,7 +285,7 @@ namespace Tetrix
             {
                 for (var x = 0; x < dim - 1; x++)
                 {
-                    if (currentPiece[y, x] == 1 && pieceNewY - y < 0)
+                    if (currentPiece[pieceRotate, y, x] == 1 && pieceNewY - y < 0)
                     {
                         Console.Write($"collision newY={pieceNewX} y={y}");
                         return true;
@@ -194,7 +299,7 @@ namespace Tetrix
             {
                 for (var x = 0; x < dim; x++)
                 {
-                    if (currentPiece[y, x] == 1 && well[pieceNewY-y, pieceNewX+x]==1)
+                    if (currentPiece[pieceRotate, y, x] == 1 && well[pieceNewY-y, pieceNewX+x]==1)
                     {
                         Console.Write($"collision newX={pieceNewX} newY={pieceNewY} x={x} y={y}");
                         return true;
@@ -240,7 +345,7 @@ namespace Tetrix
         public void DrawPiece()
         {
             var currentPiece = pieces[pieceNo];
-            var dim = currentPiece.GetLength(0); // always square
+            var dim = currentPiece.GetLength(1); // always square
             for (int y = 0; y < dim; y++)
             {
                 for (int x = 0; x < dim; x++)
@@ -248,12 +353,12 @@ namespace Tetrix
                     int drawX = wellMariginX + pieceX*2 + (x+1)*2;
                     int drawY = wellMariginY - pieceY + y;
                     Console.SetCursorPosition(drawX, drawY);
-                    Console.Write(currentPiece[y, x] == 0 ? "" : "()");
+                    Console.Write(currentPiece[pieceRotate, y, x] == 0 ? "" : "()");
                 }
 
             }
             Console.SetCursorPosition(60, 10);
-            Console.Write($"piece x1={pieceX} y1={pieceY} x2={pieceX+dim-1} y2={pieceY-dim+1} ");
+            //Console.Write($"piece x1={pieceX} y1={pieceY} x2={pieceX+dim-1} y2={pieceY-dim+1} ");
         }
 
 
