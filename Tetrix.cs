@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Tetrix
@@ -161,8 +162,8 @@ namespace Tetrix
 
         int pieceNo = 0;
         int pieceRotate = 1;
-        int pieceX = 5;
-        int pieceY = 15;
+        int pieceX = 3;
+        int pieceY = 18;
 
         static void Main(string[] args)
         {
@@ -171,17 +172,21 @@ namespace Tetrix
 
         public void MainLoop()
         {
-            Init();
             Console.WriteLine("Tetrix!");
+            Console.ReadLine();
+            Init();
             while (true) { 
-                DrawScreen();
-
-                DrawShadow();
-                DrawPiece("()", pieceY);
-
                 var key = Console.ReadKey();
-                HandleKey(key);
+                keyPressedRecently = true;
+                HandleKey(key.Key);
             }
+        }
+
+        private void DrawEverything()
+        {
+            DrawScreen();
+            DrawShadow();
+            DrawPiece("()", pieceY);
         }
 
         private void DrawShadow()
@@ -196,52 +201,61 @@ namespace Tetrix
             DrawPiece("..", pieceY - y);
         }
 
-        private void HandleKey(ConsoleKeyInfo key)
+        bool keyPressedRecently = false;
+        object syncObject = new object();
+        private void HandleKey(ConsoleKey key)
         {
-            switch (key.Key) {
-                case ConsoleKey.LeftArrow:
-                    if (false == CollisionDetected(pieceRotate, pieceX - 1, pieceY)) {
-                        pieceX--;
-                    }
-                    break;
-                case ConsoleKey.RightArrow:
-                    if (false == CollisionDetected(pieceRotate, pieceX + 1, pieceY))
-                    {
-                        pieceX++;
-                    }
-                    break;
-                case ConsoleKey.DownArrow:
-                    if (false == CollisionDetected(pieceRotate, pieceX, pieceY - 1))
-                    {
-                        pieceY--;
-                    }
-                    else
-                    {
-                        FreezePiece();
-                        CompactWell();
+            lock (syncObject)
+            {
 
-                    }
+                switch (key)
+                {
+                    case ConsoleKey.LeftArrow:
+                        if (false == CollisionDetected(pieceRotate, pieceX - 1, pieceY))
+                        {
+                            pieceX--;
+                        }
+                        break;
+                    case ConsoleKey.RightArrow:
+                        if (false == CollisionDetected(pieceRotate, pieceX + 1, pieceY))
+                        {
+                            pieceX++;
+                        }
+                        break;
+                    case ConsoleKey.DownArrow:
+                        if (false == CollisionDetected(pieceRotate, pieceX, pieceY - 1))
+                        {
+                            pieceY--;
+                        }
+                        else
+                        {
+                            FreezePiece();
+                            CompactWell();
 
-                    break;
-                case ConsoleKey.UpArrow:
-                    if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX, pieceY))
-                    {
-                        pieceRotate = (pieceRotate+1) % pieces[pieceNo].GetLength(0);
-                    }
-                    
-                    break;
-                case ConsoleKey.Spacebar:
-                    pieceRotate = 0;
-                    pieceNo++;
-                    if (pieceNo == pieces.Count)
-                    {
-                        pieceNo = 0;
-                    }
-                    break;
-                case ConsoleKey.Escape:
-                    Environment.Exit(0);
-                    break;
+                        }
 
+                        break;
+                    case ConsoleKey.UpArrow:
+                        if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX, pieceY))
+                        {
+                            pieceRotate = (pieceRotate + 1) % pieces[pieceNo].GetLength(0);
+                        }
+
+                        break;
+                    case ConsoleKey.Spacebar:
+                        pieceRotate = 0;
+                        pieceNo++;
+                        if (pieceNo == pieces.Count)
+                        {
+                            pieceNo = 0;
+                        }
+                        break;
+                    case ConsoleKey.Escape:
+                        Environment.Exit(0);
+                        break;
+
+                }
+                DrawEverything();
             }
         }
 
@@ -318,7 +332,7 @@ namespace Tetrix
                 }
             }
             pieceX = 5;
-            pieceY = 16;
+            pieceY = 18;
         }
 
         bool CollisionDetected(int pieceNewRotation, int pieceNewX, int pieceNewY)
@@ -402,6 +416,17 @@ namespace Tetrix
             well[10, 8] = well[10, 9] = 1;
             well[12, 0] = well[12, 1] = 1;
 
+            Timer timer = new Timer(Tick, null, 0, 1000);
+
+        }
+
+        private void Tick(object state)
+        {
+            if (false == keyPressedRecently)
+            {
+                HandleKey(ConsoleKey.DownArrow);
+            }
+            keyPressedRecently = false;
         }
 
         int wellMariginX = 10;
