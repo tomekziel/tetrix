@@ -66,9 +66,9 @@ namespace Tetrix
 
         };
 
-        int pieceNo = 0;
+        int pieceNo = 2;
         int pieceX = 5;
-        int pieceY = 20;
+        int pieceY = 15;
 
         static void Main(string[] args)
         {
@@ -84,22 +84,36 @@ namespace Tetrix
                 DrawPiece();
                 var key = Console.ReadKey();
                 HandleKey(key);
-
             }
-
         }
 
         private void HandleKey(ConsoleKeyInfo key)
         {
             switch (key.Key) {
                 case ConsoleKey.LeftArrow:
-                    pieceX--;
+                    if (false == CollisionDetected(pieceX - 1, pieceY)) {
+                        pieceX--;
+                    }
                     break;
-                case ConsoleKey.RightArrow: 
-                    pieceX++; 
+                case ConsoleKey.RightArrow:
+                    if (false == CollisionDetected(pieceX + 1, pieceY))
+                    {
+                        pieceX++;
+                    }
                     break;
                 case ConsoleKey.DownArrow:
-                    pieceY--;
+                    if (false == CollisionDetected(pieceX, pieceY - 1))
+                    {
+                        pieceY--;
+                    }
+
+                    break;
+                case ConsoleKey.UpArrow:
+                    if (false == CollisionDetected(pieceX, pieceY + 1))
+                    {
+                        pieceY++;
+                    }
+                    
                     break;
                 case ConsoleKey.Spacebar:
                     pieceNo++;
@@ -115,9 +129,69 @@ namespace Tetrix
             }
         }
 
+        bool CollisionDetected(int pieceNewX, int pieceNewY)
+        {
+            var currentPiece = pieces[pieceNo];
+            var dim = currentPiece.GetLength(0); // always square
+
+            Console.SetCursorPosition(60, 12);
+
+            // left and right
+            for (var y = dim - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < dim - 1; x++)
+                {
+                    if (
+                        (currentPiece[y, x] == 1 && pieceNewX + x < 0)||
+                        (currentPiece[y, x] == 1 && pieceNewX + x >= wellWidth-1))
+                    {
+                        Console.Write($"collision newX={pieceNewX} x={y}");
+                        return true;
+                    }
+                }
+            }
+
+            // well bottom (y = 0)
+            for (var y = dim - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < dim - 1; x++)
+                {
+                    if (currentPiece[y, x] == 1 && pieceNewY - y < 0)
+                    {
+                        Console.Write($"collision newY={pieceNewX} y={y}");
+                        return true;
+                    }
+
+                }
+            }
+
+            // other elements
+            for (var y = dim - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < dim; x++)
+                {
+                    if (currentPiece[y, x] == 1 && well[pieceNewY-y, pieceNewX+x]==1)
+                    {
+                        Console.Write($"collision newX={pieceNewX} newY={pieceNewY} x={x} y={y}");
+                        return true;
+                    }
+
+                }
+            }
+
+            Console.Write("                                     ");
+            return false;
+
+
+        }
+
         private void Init()
         {
             well[0, 1] = well[0, 2] = well[0, 3] = well[0, 4] = well[1, 4] = well[1, 5] = 1;
+
+            well[10, 8] = well[10, 9] = 1;
+            well[12, 0] = well[12, 1] = 1;
+
         }
 
         int wellMariginX = 10;
@@ -147,14 +221,15 @@ namespace Tetrix
             {
                 for (int x = 0; x < dim; x++)
                 {
-                    int drawX = wellMariginX + pieceX*2 + x*2;
+                    int drawX = wellMariginX + pieceX*2 + (x+1)*2;
                     int drawY = wellMariginY - pieceY + y;
                     Console.SetCursorPosition(drawX, drawY);
-                    Console.Write(currentPiece[y, x] == 0 ? "  " : "()");
+                    Console.Write(currentPiece[y, x] == 0 ? "" : "()");
                 }
 
             }
-
+            Console.SetCursorPosition(60, 10);
+            Console.Write($"piece x1={pieceX} y1={pieceY} x2={pieceX+dim-1} y2={pieceY-dim+1} ");
         }
 
 
