@@ -175,10 +175,25 @@ namespace Tetrix
             Console.WriteLine("Tetrix!");
             while (true) { 
                 DrawScreen();
-                DrawPiece();
+
+                DrawShadow();
+                DrawPiece("()", pieceY);
+
                 var key = Console.ReadKey();
                 HandleKey(key);
             }
+        }
+
+        private void DrawShadow()
+        {
+            var y = 0;
+            while (false == CollisionDetected(pieceX, pieceY - y))
+            {
+                y++;
+            }
+            y--;
+            
+            DrawPiece("..", pieceY - y);
         }
 
         private void HandleKey(ConsoleKeyInfo key)
@@ -412,7 +427,7 @@ namespace Tetrix
 
         }
 
-        public void DrawPiece()
+        public void DrawPiece(string mark, int tempPieceY)
         {
             var currentPiece = pieces[pieceNo];
             var dim = currentPiece.GetLength(1); // always square
@@ -421,13 +436,14 @@ namespace Tetrix
                 for (int x = 0; x < dim; x++)
                 {
                     int drawX = wellMariginX + pieceX*2 + (x+1)*2;
-                    int drawY = wellMariginY - pieceY + y;
+                    int drawY = wellMariginY - tempPieceY + y;
                     Console.SetCursorPosition(drawX, drawY);
-                    Console.Write(currentPiece[pieceRotate, y, x] == 0 ? "" : "()");
+                    Console.Write(currentPiece[pieceRotate, y, x] == 0 ? "" : mark);
                 }
 
             }
-            Console.SetCursorPosition(60, 10);
+
+            //Console.SetCursorPosition(60, 10);
             //Console.Write($"piece x1={pieceX} y1={pieceY} x2={pieceX+dim-1} y2={pieceY-dim+1} ");
         }
 
