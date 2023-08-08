@@ -13,6 +13,8 @@ namespace Tetrix
         readonly static int wellWidth = 10;
         readonly static int wellHeight = 20;
 
+        Random rnd = new Random();
+
         int[,] well = new int[wellHeight, wellWidth];
         int score = 0;
 
@@ -141,9 +143,9 @@ namespace Tetrix
                     {0,0,0}
                 },
                 {
-                    {0,1,0},
+                    {0,0,1},
                     {0,1,1},
-                    {0,0,1}
+                    {0,1,0}
                 },
                 {
                     {0,0,0},
@@ -160,10 +162,13 @@ namespace Tetrix
 
         };
 
+        const int pieceXinit = 3;
+        const int pieceYinit = 18;
+
         int pieceNo = 0;
         int pieceRotate = 1;
-        int pieceX = 3;
-        int pieceY = 18;
+        int pieceX = pieceXinit;
+        int pieceY = pieceYinit;
 
         static void Main(string[] args)
         {
@@ -173,7 +178,6 @@ namespace Tetrix
         public void MainLoop()
         {
             Console.WriteLine("Tetrix!");
-            Console.ReadLine();
             Init();
             while (true) { 
                 var key = Console.ReadKey();
@@ -230,7 +234,6 @@ namespace Tetrix
                         else
                         {
                             FreezePiece();
-                            CompactWell();
 
                         }
 
@@ -243,12 +246,7 @@ namespace Tetrix
 
                         break;
                     case ConsoleKey.Spacebar:
-                        pieceRotate = 0;
-                        pieceNo++;
-                        if (pieceNo == pieces.Count)
-                        {
-                            pieceNo = 0;
-                        }
+                        DropPiece();
                         break;
                     case ConsoleKey.Escape:
                         Environment.Exit(0);
@@ -257,6 +255,18 @@ namespace Tetrix
                 }
                 DrawEverything();
             }
+        }
+
+        private void DropPiece()
+        {
+            var y = 0;
+            while (false == CollisionDetected(pieceRotate, pieceX, pieceY - y))
+            {
+                y++;
+            }
+            y--;
+            pieceY -= y;
+            FreezePiece();
         }
 
         private void CompactWell()
@@ -331,8 +341,18 @@ namespace Tetrix
 
                 }
             }
-            pieceX = 5;
-            pieceY = 18;
+            pieceX = pieceXinit;
+            pieceY = pieceYinit;
+            CompactWell();
+            RandomizePiece();
+            
+        }
+
+        private void RandomizePiece()
+        {
+            pieceNo = rnd.Next(pieces.Count);
+            pieceRotate = rnd.Next(pieces[pieceNo].GetLength(0));
+
         }
 
         bool CollisionDetected(int pieceNewRotation, int pieceNewX, int pieceNewY)
@@ -349,7 +369,7 @@ namespace Tetrix
                 {
                     if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewX + x < 0) 
                     {
-                        Console.Write($"collision left newX={pieceNewX} x={x}");
+                        //Console.Write($"collision left newX={pieceNewX} x={x}");
                         return true;
                     }
                 }
@@ -362,7 +382,7 @@ namespace Tetrix
                 {
                     if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewX + x >= wellWidth)
                     {
-                        Console.Write($"collision right newX={pieceNewX} x={x}");
+                        //Console.Write($"collision right newX={pieceNewX} x={x}");
                         return true;
                     }
                 }
@@ -375,7 +395,7 @@ namespace Tetrix
                 {
                     if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewY - y < 0)
                     {
-                        Console.Write($"collision newY={pieceNewX} y={y}");
+                        //Console.Write($"collision newY={pieceNewX} y={y}");
                         return true;
                     }
 
@@ -389,14 +409,14 @@ namespace Tetrix
                 {
                     if (currentPiece[pieceNewRotation, y, x] == 1 && well[pieceNewY-y, pieceNewX+x]==1)
                     {
-                        Console.Write($"collision newX={pieceNewX} newY={pieceNewY} x={x} y={y}");
+                        //Console.Write($"collision newX={pieceNewX} newY={pieceNewY} x={x} y={y}");
                         return true;
                     }
 
                 }
             }
 
-            Console.Write("                                     ");
+            //Console.Write("                                     ");
             return false;
 
 
@@ -404,6 +424,9 @@ namespace Tetrix
 
         private void Init()
         {
+            RandomizePiece();
+
+            /*
             for (var y = 0; y < 6; y++)
             {
                 for (var x = 0; x < 9; x++)
@@ -415,6 +438,7 @@ namespace Tetrix
             well[0, 1] = well[0, 2] = well[0, 3] = well[0, 4] = well[1, 4] = well[1, 5] = 1;
             well[10, 8] = well[10, 9] = 1;
             well[12, 0] = well[12, 1] = 1;
+            */
 
             Timer timer = new Timer(Tick, null, 0, 1000);
 
@@ -442,7 +466,7 @@ namespace Tetrix
                 {
                     Console.Write(well[y, x] == 0 ? "  " : "[]");
                 }
-                Console.Write("## "+y);
+                Console.Write("## ");
             }
             Console.SetCursorPosition(wellMariginX, wellMariginY+1);
             Console.Write("########################");
