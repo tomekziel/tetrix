@@ -106,6 +106,10 @@ namespace Tetrix
                     {
                         pieceY--;
                     }
+                    else
+                    {
+                        FreezePiece();
+                    }
 
                     break;
                 case ConsoleKey.UpArrow:
@@ -127,6 +131,26 @@ namespace Tetrix
                     break;
 
             }
+        }
+
+        private void FreezePiece()
+        {
+            var currentPiece = pieces[pieceNo];
+            var dim = currentPiece.GetLength(0); // always square
+
+            for (var y = dim - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < dim; x++)
+                {
+                    if (currentPiece[y, x] == 1 )
+                    {
+                        well[pieceY - y, pieceX + x] = 1;
+                    }
+
+                }
+            }
+            pieceX = 5;
+            pieceY = 16;
         }
 
         bool CollisionDetected(int pieceNewX, int pieceNewY)
