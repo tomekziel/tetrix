@@ -13,6 +13,7 @@ namespace Tetrix
         readonly static int wellHeight = 20;
 
         int[,] well = new int[wellHeight, wellWidth];
+        int score = 0;
 
         readonly static List<int [,,]> pieces = new List<int[,,]> {
             new int[,,] {
@@ -158,8 +159,8 @@ namespace Tetrix
 
         };
 
-        int pieceNo = 2;
-        int pieceRotate = 0;
+        int pieceNo = 0;
+        int pieceRotate = 1;
         int pieceX = 5;
         int pieceY = 15;
 
@@ -202,6 +203,8 @@ namespace Tetrix
                     else
                     {
                         FreezePiece();
+                        CompactWell();
+
                     }
 
                     break;
@@ -224,6 +227,62 @@ namespace Tetrix
                     Environment.Exit(0);
                     break;
 
+            }
+        }
+
+        private void CompactWell()
+        {
+
+            int lines = 0;
+
+            var y = 0;
+            while (y < wellHeight) 
+            {
+                var allFilled = true;
+                for(var x=0; x<wellWidth; x++)
+                {
+                    if (well[y,x] == 0)
+                    {
+                        allFilled = false;
+                        break;
+                    }
+                }
+                if (false == allFilled){
+                    y++;
+                    continue;
+                }
+
+                lines++;
+
+                for (var y2=y; y2<wellHeight-2; y2++)
+                {
+                    for (var x = 0; x < wellWidth; x++)
+                    {
+                        well[y2, x] = well[y2 + 1, x];
+                    }
+                }
+                for (var x = 0; x < wellWidth; x++)
+                {
+                    well[wellHeight-1, x] = 0;
+                }
+
+
+            }
+
+            switch (lines)
+            {
+                case 4:
+                    score += 1200;
+                    break;
+                case 3:
+                    score += 300;
+                    break;
+                case 2:
+                    score += 100;
+                    break;
+                case 1:
+                    score += 40;
+                    break;
             }
         }
 
@@ -316,8 +375,15 @@ namespace Tetrix
 
         private void Init()
         {
-            well[0, 1] = well[0, 2] = well[0, 3] = well[0, 4] = well[1, 4] = well[1, 5] = 1;
+            for (var y = 0; y < 6; y++)
+            {
+                for (var x = 0; x < 9; x++)
+                {
+                    well[y,x] = 1;  
+                }
+            }
 
+            well[0, 1] = well[0, 2] = well[0, 3] = well[0, 4] = well[1, 4] = well[1, 5] = 1;
             well[10, 8] = well[10, 9] = 1;
             well[12, 0] = well[12, 1] = 1;
 
@@ -340,6 +406,10 @@ namespace Tetrix
             }
             Console.SetCursorPosition(wellMariginX, wellMariginY+1);
             Console.Write("########################");
+
+            Console.SetCursorPosition(50, 5);
+            Console.Write("SCORE "+score);
+
         }
 
         public void DrawPiece()
