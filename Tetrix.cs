@@ -187,7 +187,7 @@ namespace Tetrix
         private void DrawShadow()
         {
             var y = 0;
-            while (false == CollisionDetected(pieceX, pieceY - y))
+            while (false == CollisionDetected(pieceRotate, pieceX, pieceY - y))
             {
                 y++;
             }
@@ -200,18 +200,18 @@ namespace Tetrix
         {
             switch (key.Key) {
                 case ConsoleKey.LeftArrow:
-                    if (false == CollisionDetected(pieceX - 1, pieceY)) {
+                    if (false == CollisionDetected(pieceRotate, pieceX - 1, pieceY)) {
                         pieceX--;
                     }
                     break;
                 case ConsoleKey.RightArrow:
-                    if (false == CollisionDetected(pieceX + 1, pieceY))
+                    if (false == CollisionDetected(pieceRotate, pieceX + 1, pieceY))
                     {
                         pieceX++;
                     }
                     break;
                 case ConsoleKey.DownArrow:
-                    if (false == CollisionDetected(pieceX, pieceY - 1))
+                    if (false == CollisionDetected(pieceRotate, pieceX, pieceY - 1))
                     {
                         pieceY--;
                     }
@@ -224,7 +224,7 @@ namespace Tetrix
 
                     break;
                 case ConsoleKey.UpArrow:
-                    if (false == CollisionDetected(pieceX, pieceY + 1))
+                    if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX, pieceY))
                     {
                         pieceRotate = (pieceRotate+1) % pieces[pieceNo].GetLength(0);
                     }
@@ -321,7 +321,7 @@ namespace Tetrix
             pieceY = 16;
         }
 
-        bool CollisionDetected(int pieceNewX, int pieceNewY)
+        bool CollisionDetected(int pieceNewRotation, int pieceNewX, int pieceNewY)
         {
             var currentPiece = pieces[pieceNo];
             var dim = currentPiece.GetLength(1); // always square
@@ -333,7 +333,7 @@ namespace Tetrix
             {
                 for (var x = 0; x < dim - 1; x++)
                 {
-                    if (currentPiece[pieceRotate, y, x] == 1 && pieceNewX + x < 0) 
+                    if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewX + x < 0) 
                     {
                         Console.Write($"collision left newX={pieceNewX} x={x}");
                         return true;
@@ -346,7 +346,7 @@ namespace Tetrix
             {
                 for (var x = dim - 1; x >= 0; x--)
                 {
-                    if (currentPiece[pieceRotate, y, x] == 1 && pieceNewX + x >= wellWidth)
+                    if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewX + x >= wellWidth)
                     {
                         Console.Write($"collision right newX={pieceNewX} x={x}");
                         return true;
@@ -359,7 +359,7 @@ namespace Tetrix
             {
                 for (var x = 0; x < dim - 1; x++)
                 {
-                    if (currentPiece[pieceRotate, y, x] == 1 && pieceNewY - y < 0)
+                    if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewY - y < 0)
                     {
                         Console.Write($"collision newY={pieceNewX} y={y}");
                         return true;
@@ -373,7 +373,7 @@ namespace Tetrix
             {
                 for (var x = 0; x < dim; x++)
                 {
-                    if (currentPiece[pieceRotate, y, x] == 1 && well[pieceNewY-y, pieceNewX+x]==1)
+                    if (currentPiece[pieceNewRotation, y, x] == 1 && well[pieceNewY-y, pieceNewX+x]==1)
                     {
                         Console.Write($"collision newX={pieceNewX} newY={pieceNewY} x={x} y={y}");
                         return true;
