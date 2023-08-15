@@ -11,7 +11,7 @@ namespace Tetrix
     {
 
         readonly static int wellWidth = 10;
-        readonly static int wellHeight = 20;
+        readonly static int wellHeight = 25;
 
         Random rnd = new Random();
 
@@ -19,7 +19,7 @@ namespace Tetrix
         int score = 0;
 
         readonly static List<int [,,]> pieces = new List<int[,,]> {
-            new int[,,] {
+            new int[,,] { // 0
                 {
                     {0,0,0,0},
                     {1,1,1,1},
@@ -43,7 +43,7 @@ namespace Tetrix
                 }
             }
             ,
-            new int[,,]{
+            new int[,,]{ // 1
                 {
                     {1,0,0},
                     {1,1,1},
@@ -63,7 +63,7 @@ namespace Tetrix
                 },
             }
             ,
-            new int[,,]{
+            new int[,,]{ // 2
                 {
                     {0,0,1},
                     {1,1,1},
@@ -86,14 +86,14 @@ namespace Tetrix
                 }
             }
             ,
-            new int[,,]{
+            new int[,,]{ // 3
                 {
                     {1,1},
                     {1,1}
                 }
             }
             ,
-            new int[,,]{
+            new int[,,]{ // 4
                 {
                     {0,1,1},
                     {1,1,0},
@@ -113,7 +113,7 @@ namespace Tetrix
                 },
             }
             ,
-            new int[,,]{
+            new int[,,]{ // 5
                 {
                     {0,1,0},
                     {1,1,1},
@@ -136,7 +136,7 @@ namespace Tetrix
                 },
             }
             ,
-            new int[,,]{
+            new int[,,]{ // 6
                 {
                     {1,1,0},
                     {0,1,1},
@@ -162,13 +162,14 @@ namespace Tetrix
 
         };
 
-        const int pieceXinit = 3;
-        const int pieceYinit = 18;
+        const int pieceYinit = 20;
 
-        int pieceNo = 0;
+        int pieceNo = 4;
         int pieceRotate = 1;
-        int pieceX = pieceXinit;
+        int pieceX = 4;
         int pieceY = pieceYinit;
+
+        bool gameEnded = false;
 
         static void Main(string[] args)
         {
@@ -178,11 +179,26 @@ namespace Tetrix
         public void MainLoop()
         {
             Console.WriteLine("Tetrix!");
+            Timer timer = new Timer(Tick, null, 0, 1000);
             Init();
-            while (true) { 
-                var key = Console.ReadKey();
-                keyPressedRecently = true;
-                HandleKey(key.Key);
+
+            while (true) {
+
+                if (false == gameEnded)
+                {
+                    var key = Console.ReadKey();
+                    keyPressedRecently = true;
+                    HandleKey(key.Key);
+                }
+                else
+                {
+                    if (Console.ReadKey().Key == ConsoleKey.Enter)
+                    {
+                        Init();
+                        gameEnded = false;
+                    }
+
+                }
             }
         }
 
@@ -341,8 +357,6 @@ namespace Tetrix
 
                 }
             }
-            pieceX = pieceXinit;
-            pieceY = pieceYinit;
             CompactWell();
             RandomizePiece();
             
@@ -353,6 +367,13 @@ namespace Tetrix
             pieceNo = rnd.Next(pieces.Count);
             pieceRotate = rnd.Next(pieces[pieceNo].GetLength(0));
 
+            pieceX = 5 - pieces[pieceNo].GetLength(0)/2;
+            pieceY = pieceYinit;
+
+            if (CollisionDetected(pieceRotate, pieceX, pieceY))
+            {
+                gameEnded = true;
+            }
         }
 
         bool CollisionDetected(int pieceNewRotation, int pieceNewX, int pieceNewY)
@@ -391,7 +412,7 @@ namespace Tetrix
             // well bottom (y = 0)
             for (var y = dim - 1; y >= 0; y--)
             {
-                for (var x = 0; x < dim - 1; x++)
+                for (var x = 0; x < dim; x++)
                 {
                     if (currentPiece[pieceNewRotation, y, x] == 1 && pieceNewY - y < 0)
                     {
@@ -424,6 +445,8 @@ namespace Tetrix
 
         private void Init()
         {
+            score = 0;
+            well = new int[wellHeight, wellWidth];
             RandomizePiece();
 
             /*
@@ -440,25 +463,26 @@ namespace Tetrix
             well[12, 0] = well[12, 1] = 1;
             */
 
-            Timer timer = new Timer(Tick, null, 0, 1000);
 
         }
 
         private void Tick(object state)
         {
-            if (false == keyPressedRecently)
+            if (false == gameEnded && false == keyPressedRecently)
             {
                 HandleKey(ConsoleKey.DownArrow);
             }
+            
             keyPressedRecently = false;
         }
 
         int wellMariginX = 10;
-        int wellMariginY = 22;
+        int wellMariginY = 25;
 
         public void DrawScreen()
         {
-            for (int y = 0; y < wellHeight; y++)
+            // not drawing whole board
+            for (int y = 0; y < 20; y++)
             {
                 Console.SetCursorPosition(wellMariginX, wellMariginY - y);
                 Console.Write("##");
@@ -468,11 +492,23 @@ namespace Tetrix
                 }
                 Console.Write("## ");
             }
+            for (int y = 20; y < wellHeight; y++)
+            {
+                Console.SetCursorPosition(wellMariginX, wellMariginY - y);
+                Console.Write("                        ");
+            }
+
             Console.SetCursorPosition(wellMariginX, wellMariginY+1);
             Console.Write("########################");
 
             Console.SetCursorPosition(50, 5);
             Console.Write("SCORE "+score);
+
+            Console.SetCursorPosition(50, 7);
+            Console.Write(gameEnded?"GAME OVER":"          ");
+            Console.SetCursorPosition(50, 8);
+            Console.Write(gameEnded ? "press enter to try again":"                          ");
+
 
         }
 
