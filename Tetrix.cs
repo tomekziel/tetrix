@@ -266,6 +266,27 @@ namespace Tetrix
                         {
                             pieceRotate = (pieceRotate + 1) % pieces[pieceNo].GetLength(0);
                         }
+                        else if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX - 1, pieceY))
+                        {
+                            pieceX -= 1;
+                            pieceRotate = (pieceRotate + 1) % pieces[pieceNo].GetLength(0);
+                        }
+                        else if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX + 1, pieceY))
+                        {
+                            pieceX += 1;
+                            pieceRotate = (pieceRotate + 1) % pieces[pieceNo].GetLength(0);
+                        }
+                        else if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX - 2, pieceY))
+                        {
+                            pieceX -= 2;
+                            pieceRotate = (pieceRotate + 1) % pieces[pieceNo].GetLength(0);
+
+                        }
+                        else if (false == CollisionDetected((pieceRotate + 1) % pieces[pieceNo].GetLength(0), pieceX + 2, pieceY))
+                        {
+                            pieceX += 2;
+                            pieceRotate = (pieceRotate + 1) % pieces[pieceNo].GetLength(0);
+                        }
 
                         break;
                     case ConsoleKey.Spacebar:
