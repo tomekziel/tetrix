@@ -18,6 +18,10 @@ namespace Tetrix
         int[,] well = new int[wellHeight, wellWidth];
         int score = 0;
 
+        int[] currentBag = new int[] { 0, 1, 2, 3, 4, 5, 6 };
+        int[] nextBag = new int[] { 0, 1, 2, 3, 4, 5, 6 };
+        int bagIdx = -1;
+
         readonly static List<int [,,]> pieces = new List<int[,,]> {
             new int[,,] { // 0
                 {
@@ -162,7 +166,7 @@ namespace Tetrix
 
         };
 
-        const int pieceYinit = 20;
+        const int pieceYinit = 22;
 
         int pieceNo = 4;
         int pieceRotate = 1;
@@ -205,8 +209,11 @@ namespace Tetrix
         private void DrawEverything()
         {
             DrawScreen();
-            DrawShadow();
-            DrawPiece("()", pieceY);
+            if (false == gameEnded)
+            {
+                DrawShadow();
+                DrawPiece("()", pieceY);
+            }
         }
 
         private void DrawShadow()
@@ -364,10 +371,18 @@ namespace Tetrix
 
         private void RandomizePiece()
         {
-            pieceNo = rnd.Next(pieces.Count);
-            pieceRotate = rnd.Next(pieces[pieceNo].GetLength(0));
+            bagIdx++;
+            if (bagIdx == 7)
+            {
+                Array.Copy(nextBag, currentBag, nextBag.Length);
+                nextBag = nextBag = nextBag.OrderBy(x => rnd.Next()).ToArray();
+                bagIdx = 0;
+            }
 
-            pieceX = 5 - pieces[pieceNo].GetLength(0)/2;
+            pieceNo = currentBag[bagIdx];
+            pieceRotate = 0;
+
+            pieceX = pieceNo == 3 ? 4 : 3;
             pieceY = pieceYinit;
 
             if (CollisionDetected(pieceRotate, pieceX, pieceY))
@@ -447,6 +462,11 @@ namespace Tetrix
         {
             score = 0;
             well = new int[wellHeight, wellWidth];
+
+            currentBag = currentBag.OrderBy(x => rnd.Next()).ToArray();
+            nextBag = nextBag.OrderBy(x => rnd.Next()).ToArray();
+            bagIdx = -1;
+
             RandomizePiece();
 
             /*
@@ -482,21 +502,18 @@ namespace Tetrix
         public void DrawScreen()
         {
             // not drawing whole board
-            for (int y = 0; y < 20; y++)
+            for (int y = 0; y < wellHeight; y++)
             {
                 Console.SetCursorPosition(wellMariginX, wellMariginY - y);
-                Console.Write("##");
+                Console.Write(y<20?"##":"  ");
                 for (int x=0; x<wellWidth; x++)
                 {
                     Console.Write(well[y, x] == 0 ? "  " : "[]");
                 }
-                Console.Write("## ");
+                Console.Write(y < 20 ? "##" : "  ");
+                //Console.Write("## "+y);
             }
-            for (int y = 20; y < wellHeight; y++)
-            {
-                Console.SetCursorPosition(wellMariginX, wellMariginY - y);
-                Console.Write("                        ");
-            }
+
 
             Console.SetCursorPosition(wellMariginX, wellMariginY+1);
             Console.Write("########################");
@@ -527,6 +544,22 @@ namespace Tetrix
                 }
 
             }
+
+            var nextPiece = bagIdx < 6 ? pieces[currentBag[bagIdx + 1]] : pieces[nextBag[0]];
+            var dimNext = nextPiece.GetLength(1); // always square
+            for (int y = 0; y < dimNext; y++)
+            {
+                for (int x = 0; x < dimNext; x++)
+                {
+                    int drawX = 50 + (x + 1) * 2;
+                    int drawY = 20 + y;
+                    Console.SetCursorPosition(drawX, drawY);
+                    Console.Write(nextPiece[0, y, x] == 0 ? "    " : mark+"  ");
+                }
+
+            }
+
+
 
             //Console.SetCursorPosition(60, 10);
             //Console.Write($"piece x1={pieceX} y1={pieceY} x2={pieceX+dim-1} y2={pieceY-dim+1} ");
